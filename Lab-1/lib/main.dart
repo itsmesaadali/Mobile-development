@@ -1,7 +1,73 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  print("hello world");
+  var name = 'saad';
+  print('My name is $name');
+
+  String hobby = 'Watch Series';
+  print(
+    'My name is $name'
+    ' and my hobby is $hobby',
+  );
+
+  const int age = 21;
+  print(
+    'My name is $name,'
+    ' and my hobby is $hobby'
+    ' and my age is $age',
+  );
+
+  String multilineAddress = '''House no 15, Street not 19A, AwanTown, RWP ''';
+  print(multilineAddress);
+
+  bool alive = true;
+  print('Yes it alive $alive');
+
+  List fruits = ['Apple', 'Grapes', 'Banana'];
+  print('Fruit names: ${fruits[0]}');
+
+  fruits.forEach((fruit) {
+    print('Fruit names: $fruit');
+  });
+
+  Map names = {'id1':'Haroon', 'id2':'Pasha', 'id3':'Abrar'};
+  print('Get filter with id3: ${names['id3']}'); 
+
+  Runes myEmoji = Runes('\u{1f607}');
+   print(myEmoji);
+   print(String.fromCharCodes(myEmoji));
+
+    // Function inside main
+  int add(int a, int b) {
+    return a + b;
+  }
+
+  print("Sum of 5 + 3 = ${add(5, 3)}");
+
+    // ====== CLASS Example ======
+  
+
+  // Create object of class
+  Student s1 = Student("Ali", 20);
+  Student s2 = Student("Sara", 22);
+
+  s1.displayInfo();
+  s2.displayInfo();
+}
+
+// Define a class outside main
+class Student {
+  String name;
+  int age;
+
+  // Constructor
+  Student(this.name, this.age);
+
+  // Method
+  void displayInfo() {
+    print("Student Name: $name, Age: $age");
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -36,7 +102,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});                           
+  const MyHomePage({super.key, required this.title});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
