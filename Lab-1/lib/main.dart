@@ -27,26 +27,25 @@ void main() {
   List fruits = ['Apple', 'Grapes', 'Banana'];
   print('Fruit names: ${fruits[0]}');
 
-  fruits.forEach((fruit) {
+  for (var fruit in fruits) {
     print('Fruit names: $fruit');
-  });
+  }
 
-  Map names = {'id1':'Haroon', 'id2':'Pasha', 'id3':'Abrar'};
-  print('Get filter with id3: ${names['id3']}'); 
+  Map names = {'id1': 'Haroon', 'id2': 'Pasha', 'id3': 'Abrar'};
+  print('Get filter with id3: ${names['id3']}');
 
   Runes myEmoji = Runes('\u{1f607}');
-   print(myEmoji);
-   print(String.fromCharCodes(myEmoji));
+  print(myEmoji);
+  print(String.fromCharCodes(myEmoji));
 
-    // Function inside main
+  // Function inside main
   int add(int a, int b) {
     return a + b;
   }
 
   print("Sum of 5 + 3 = ${add(5, 3)}");
 
-    // ====== CLASS Example ======
-  
+  // ====== CLASS Example ======
 
   // Create object of class
   Student s1 = Student("Ali", 20);

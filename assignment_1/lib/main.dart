@@ -4,18 +4,16 @@ import 'package:flutter/material.dart';
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key); // const constructor supported
+  const MyApp({super.key}); // const constructor supported
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: const MaximumBid(),
-    );
+    return MaterialApp(home: const MaximumBid());
   }
 }
 
 class MaximumBid extends StatefulWidget {
-  const MaximumBid({Key? key}) : super(key: key);
+  const MaximumBid({super.key});
 
   @override
   _MaximumBidState createState() => _MaximumBidState();
@@ -40,7 +38,7 @@ class _MaximumBidState extends State<MaximumBid> {
           children: [
             // use Key so tests can find this text reliably
             Text(
-              'Current Maximum Bid: \$${bid}',
+              'Current Maximum Bid: \$$bid',
               key: const Key('bidText'),
               style: const TextStyle(fontSize: 20),
             ),
