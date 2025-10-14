@@ -8,29 +8,9 @@ class AppThemes {
         primaryColor: Colors.blue[900],
         scaffoldBackgroundColor: Colors.blueGrey[900],
         cardColor: Colors.blue[800],
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white),
-        ),
         colorScheme: ColorScheme.dark(
-          primary: Colors.blue[900]!,
-          secondary: Colors.blue[700]!,
-        ),
-      ),
-    },
-    {
-      'name': 'Dark Purple',
-      'theme': ThemeData(
-        primaryColor: Colors.purple[900],
-        scaffoldBackgroundColor: Colors.deepPurple[900],
-        cardColor: Colors.purple[800],
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white),
-        ),
-        colorScheme: ColorScheme.dark(
-          primary: Colors.purple[900]!,
-          secondary: Colors.purple[700]!,
+          primary: Colors.blue,
+          secondary: Colors.blueAccent,
         ),
       ),
     },
@@ -40,13 +20,34 @@ class AppThemes {
         primaryColor: Colors.green[900],
         scaffoldBackgroundColor: Colors.teal[900],
         cardColor: Colors.green[800],
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white),
-        ),
         colorScheme: ColorScheme.dark(
-          primary: Colors.green[900]!,
-          secondary: Colors.green[700]!,
+          primary: Colors.green,
+          secondary: Colors.tealAccent,
+        ),
+      ),
+    },
+    {
+      'name': 'Pure Black',
+      'theme': ThemeData(
+        primaryColor: const Color(0xFF000000),
+        scaffoldBackgroundColor: const Color(0xFF000000),
+        cardColor: const Color(0xFF121212),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF000000),
+          secondary: Colors.white70,
+        ),
+      ),
+    },
+
+    {
+      'name': 'Matte Black',
+      'theme': ThemeData(
+        primaryColor: const Color(0xFF1C1C1C),
+        scaffoldBackgroundColor: const Color(0xFF1C1C1C),
+        cardColor: const Color(0xFF2A2A2A),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF1C1C1C),
+          secondary: Colors.white60,
         ),
       ),
     },
