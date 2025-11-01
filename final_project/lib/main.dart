@@ -1,4 +1,4 @@
-import 'package:final_project/ui/get_started.dart';
+import 'package:final_project/ui/home_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -12,7 +12,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'Weather App',
-      home: GetStarted(),
+      home: HomePage(),
       debugShowCheckedModeBanner: false,
     );
   }
