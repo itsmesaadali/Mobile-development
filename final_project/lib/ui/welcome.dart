@@ -1,5 +1,6 @@
 import 'package:final_project/models/city.dart';
 import 'package:final_project/models/constants.dart';
+import 'package:final_project/ui/home.dart';
 import 'package:flutter/material.dart';
 
 class Welcome extends StatefulWidget {
@@ -87,7 +88,10 @@ class _WelcomeState extends State<Welcome> {
         backgroundColor: myConstants.secondaryColor,
         child: const Icon(Icons.arrow_forward),
         onPressed: () {
-          print(selectedCities.length);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Home()),
+          );
         },
       ),
     );
