@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:final_project/components/weather_item.dart';
 import 'package:final_project/constants.dart';
+import 'package:final_project/ui/detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -19,9 +20,10 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _cityController = TextEditingController();
   final Constants _constants = Constants();
 
-  static String API_KEY = ''; //Paste Your API Here
+  static String API_KEY =
+      'de053dd9eaf248c2b5b145330253010'; //Paste Your API Here
 
-  String location = 'London'; //Default location
+  String location = 'Islamabad'; //Default location
   String weatherIcon = 'heavycloud.png';
   int temperature = 0;
   int windSpeed = 0;
@@ -75,7 +77,6 @@ class _HomePageState extends State<HomePage> {
         //Forecast data
         dailyWeatherForecast = weatherData["forecast"]["forecastday"];
         hourlyWeatherForecast = dailyWeatherForecast[0]["hour"];
-        print(dailyWeatherForecast);
       });
     } catch (e) {
       //debugPrint(e);
@@ -320,20 +321,24 @@ class _HomePageState extends State<HomePage> {
                           fontSize: 20.0,
                         ),
                       ),
-                      // GestureDetector(
-                      //   onTap: () =>
-                      //       Navigator.push(
-                      //           context,
-                      //           MaterialPageRoute(builder: (_)=> DetailPage(dailyForecastWeather: dailyWeatherForecast,))), //this will open forecast screen
-                      //   child: Text(
-                      //     'Forecasts',
-                      //     style: TextStyle(
-                      //       fontWeight: FontWeight.w600,
-                      //       fontSize: 16,
-                      //       color: _constants.primaryColor,
-                      //     ),
-                      //   ),
-                      // ),
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DetailPage(
+                              dailyForecastWeather: dailyWeatherForecast,
+                            ),
+                          ),
+                        ), //this will open forecast screen
+                        child: Text(
+                          'Forecasts',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: _constants.primaryColor,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -422,7 +427,7 @@ class _HomePageState extends State<HomePage> {
                                     style: TextStyle(
                                       color: _constants.greyColor,
                                       fontWeight: FontWeight.w600,
-                                      fontSize: 17,
+                                      fontSize: 10,
                                       fontFeatures: const [
                                         FontFeature.enable('sups'),
                                       ],
