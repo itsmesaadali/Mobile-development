@@ -1,5 +1,5 @@
 import 'package:e_commerence/pages/home.dart';
-import 'package:e_commerence/pages/onboarding.dart';
+// import 'package:e_commerence/pages/onboarding.dart';
 import 'package:flutter/material.dart';
 
 void main() {
