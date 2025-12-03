@@ -1,5 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const upload = require("../middlewares/upload");
+
+
 const {
   addProduct,
   getAllProducts,
@@ -8,13 +11,15 @@ const {
   deleteProduct,
 } = require("../controllers/productController");
 
-// PUBLIC (for now) – later protect some with admin middleware
+// GET routes
 router.get("/", getAllProducts);
 router.get("/category/:category", getByCategory);
 
-// ADMIN ONLY (later)
-router.post("/", addProduct);
-router.put("/:id", updateProduct);
+// Image upload route (Multer middleware)
+router.post("/", upload.single("image"), addProduct);
+
+router.put("/:id", upload.single("image"), updateProduct);
+
 router.delete("/:id", deleteProduct);
 
 module.exports = router;
