@@ -1,9 +1,11 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:e_commerence/services/api_service.dart';
 import 'package:e_commerence/widget/support_widget.dart';
 
 class EditProduct extends StatefulWidget {
+  final String id;
   final String image;
   final String name;
   final String price;
@@ -12,6 +14,7 @@ class EditProduct extends StatefulWidget {
 
   const EditProduct({
     super.key,
+    required this.id,
     required this.image,
     required this.name,
     required this.price,
@@ -26,7 +29,7 @@ class EditProduct extends StatefulWidget {
 class _EditProductState extends State<EditProduct> {
   final ImagePicker _picker = ImagePicker();
 
-  File? selectedImage;
+  XFile? selectedImage; // <-- Web image
 
   late TextEditingController nameController;
   late TextEditingController priceController;
@@ -45,7 +48,6 @@ class _EditProductState extends State<EditProduct> {
   @override
   void initState() {
     super.initState();
-
     nameController = TextEditingController(text: widget.name);
     priceController = TextEditingController(text: widget.price);
     detailController = TextEditingController(text: widget.detail);
@@ -55,30 +57,43 @@ class _EditProductState extends State<EditProduct> {
   Future pickNewImage() async {
     final img = await _picker.pickImage(source: ImageSource.gallery);
     if (img != null) {
-      selectedImage = File(img.path);
+      selectedImage = img; // <-- no File() for web
       setState(() {});
     }
   }
 
-  void saveProduct() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.all(20),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.check_circle, size: 80, color: Colors.green),
-            SizedBox(height: 15),
-            Text(
-              "Product Updated (Static)",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
+  void saveProduct() async {
+    bool success = await ApiService.updateProduct(
+      id: widget.id,
+      name: nameController.text,
+      price: priceController.text,
+      detail: detailController.text,
+      category: selectedCategory!,
+      image: selectedImage, // optional
     );
+
+    if (success) {
+      showDialog(
+        context: context,
+        builder: (_) =>
+            AlertDialog(content: const Text("Product updated successfully")),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Failed to update product")));
+    }
+  }
+
+  // Load bytes from the selected XFile for Image.memory (works on web & mobile)
+  Future<Uint8List?> _loadImageBytes() async {
+    if (selectedImage == null) return null;
+    try {
+      return await selectedImage!.readAsBytes();
+    } catch (e) {
+      // If reading fails, return null so the FutureBuilder can handle it
+      return null;
+    }
   }
 
   @override
@@ -115,11 +130,24 @@ class _EditProductState extends State<EditProduct> {
                   color: Colors.white,
                   border: Border.all(color: Colors.grey.shade300),
                 ),
+
                 child: selectedImage == null
-                    ? Image.asset(widget.image, fit: BoxFit.cover)
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.file(selectedImage!, fit: BoxFit.cover),
+                    // OLD IMAGE FROM SERVER (network)
+                    ? Image.network(widget.image, fit: BoxFit.cover)
+                    // NEW IMAGE SELECTED FROM FILE (WEB SAFE)
+                    : FutureBuilder<Uint8List?>(
+                        future: _loadImageBytes(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          return Image.memory(
+                            snapshot.data!,
+                            fit: BoxFit.cover,
+                          );
+                        },
                       ),
               ),
             ),
@@ -186,11 +214,7 @@ class _EditProductState extends State<EditProduct> {
                 ),
                 child: const Text(
                   "Save Changes",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
             ),
@@ -200,7 +224,6 @@ class _EditProductState extends State<EditProduct> {
     );
   }
 
-  // -------- INPUT FIELD REUSABLE WIDGET -------- //
   Widget inputBox(
     TextEditingController controller, {
     int maxLines = 1,

@@ -2,7 +2,9 @@ import 'package:e_commerence/Admin/add_product.dart';
 import 'package:e_commerence/Admin/all_product.dart';
 import 'package:e_commerence/Admin/all_user.dart';
 import 'package:e_commerence/Admin/manage_order.dart';
+import 'package:e_commerence/Admin/admin_login.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeAdmin extends StatefulWidget {
   const HomeAdmin({super.key});
@@ -35,7 +37,6 @@ class _HomeAdminState extends State<HomeAdmin> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // TOP CARDS
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -93,13 +94,44 @@ class _HomeAdminState extends State<HomeAdmin> {
                 ),
               ],
             ),
+
+            const Spacer(), // pushes logout button to bottom
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AdminLogin()),
+                    (route) => false,
+                  );
+                },
+                icon: const Icon(Icons.logout, color: Colors.white),
+                label: const Text(
+                  "Logout",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Dashboard Card Widget
   Widget dashboardCard({
     required IconData icon,
     required String title,

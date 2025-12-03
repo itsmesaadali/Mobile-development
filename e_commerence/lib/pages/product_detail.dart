@@ -1,5 +1,7 @@
+import 'package:e_commerence/services/payment_service.dart';
 import 'package:e_commerence/widget/support_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProductDetail extends StatelessWidget {
   final String image, name, price, detail;
@@ -29,10 +31,6 @@ class ProductDetail extends StatelessWidget {
               onTap: () => Navigator.pop(context),
               child: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.black),
-                ),
                 child: const Icon(Icons.arrow_back, color: Colors.black),
               ),
             ),
@@ -47,7 +45,7 @@ class ProductDetail extends StatelessWidget {
         children: [
           // Product Image
           Center(
-            child: Image.asset(
+            child: Image.network(
               image,
               height: 350,
               fit: BoxFit.cover,
@@ -101,9 +99,30 @@ class ProductDetail extends StatelessWidget {
 
                   // BUY NOW BUTTON
                   GestureDetector(
-                    onTap: () {
-                      // later backend checkout API
+                    onTap: () async {
+                      double amount = double.tryParse(price) ?? 0;
+
+                      // 1️⃣ Create Stripe Checkout Session
+                      String? checkoutUrl =
+                          await PaymentService.createCheckoutSession(
+                            productName: name,
+                            amount: amount,
+                          );
+
+                      if (checkoutUrl == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Payment failed")),
+                        );
+                        return;
+                      }
+
+                      // 2️⃣ Open Stripe Checkout in browser
+                      await launchUrl(
+                        Uri.parse(checkoutUrl),
+                        mode: LaunchMode.externalApplication,
+                      );
                     },
+
                     child: Container(
                       padding: const EdgeInsets.all(15),
                       width: double.infinity,

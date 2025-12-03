@@ -1,5 +1,7 @@
 import 'package:e_commerence/pages/bottomnav.dart';
 import 'package:e_commerence/pages/signup.dart';
+import 'package:e_commerence/services/database.dart';
+import 'package:e_commerence/services/shared_pref.dart';
 import 'package:e_commerence/widget/support_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,31 +21,41 @@ class _LoginState extends State<Login> {
 
   userLogin() async {
     if (_formKey.currentState!.validate()) {
-      String email = emailController.text;
-      String password = passwordController.text;
-
       try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+        UserCredential userData = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(
+              email: emailController.text,
+              password: passwordController.text,
+            );
+
+        String uid = userData.user!.uid;
+
+        // 🔥 Fetch Firestore user data
+        var userSnapshot = await DatabaseMethods().getUserDetails(uid);
+
+        if (!userSnapshot.exists) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("User record missing in Firestore")),
+          );
+          return;
+        }
+
+        var user = userSnapshot.data()!;
+
+        // 🔥 Save locally
+        await SharedPreferenceHelper().saveUserId(uid);
+        await SharedPreferenceHelper().saveUserName(user["Name"]);
+        await SharedPreferenceHelper().saveUserEmail(user["Email"]);
+        await SharedPreferenceHelper().saveUserImage(user["Image"]);
 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const BottomNav()),
         );
-      } on FirebaseAuthException catch (e) {
-        String message = "";
-        if (e.code == 'user-not-found') {
-          message = "No user found for that email.";
-        } else if (e.code == 'wrong-password') {
-          message = "Wrong password provided for that user.";
-        } else {
-          message = e.message ?? "Login failed.";
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message, style: AppStyles.subtitle)),
-        );
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }

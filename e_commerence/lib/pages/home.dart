@@ -1,4 +1,5 @@
 import 'package:e_commerence/pages/category_products.dart';
+import 'package:e_commerence/services/api_service.dart';
 import 'package:e_commerence/services/shared_pref.dart';
 import 'package:e_commerence/widget/support_widget.dart';
 import 'package:flutter/material.dart';
@@ -20,12 +21,16 @@ class _HomeState extends State<Home> {
   ];
 
   final List<String> categoryNames = [
-    "TV",
-    "Laptop",
-    "Headphones",
-    "Stopwatch",
-    "Digital Watch",
+    "Electronics",
+    "Clothes",
+    "Books",
+    "Accessories",
+    "Home Appliances",
   ];
+
+  List<dynamic> products = [];
+  bool loading = true;
+  Map<String, dynamic> oneProductPerCategory = {};
 
   String? name, image;
 
@@ -35,10 +40,36 @@ class _HomeState extends State<Home> {
     setState(() {});
   }
 
+  loadProducts() async {
+    products = await ApiService.getAllProducts();
+    setState(() {
+      loading = false;
+    });
+  }
+
+  loadOneCategoryProducts() async {
+    products = await ApiService.getAllProducts();
+
+    // pick first product per category
+    for (var p in products) {
+      String category = p["category"];
+      if (!oneProductPerCategory.containsKey(category)) {
+        oneProductPerCategory[category] = p;
+      }
+      if (oneProductPerCategory.length == 5) break; // only 5 categories
+    }
+
+    setState(() {
+      loading = false;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     getUserData();
+    loadProducts();
+    loadOneCategoryProducts();
   }
 
   @override
@@ -119,55 +150,62 @@ class _HomeState extends State<Home> {
                     // Categories Grid
                     Text("Categories", style: AppStyles.heading),
                     const SizedBox(height: 10),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: categories.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 15,
-                            mainAxisSpacing: 15,
-                            childAspectRatio: 0.9,
+
+                    loading
+                        ? const Center(child: CircularProgressIndicator())
+                        : GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: oneProductPerCategory.length, // always 5
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: 15,
+                                  mainAxisSpacing: 15,
+                                  childAspectRatio: 0.9,
+                                ),
+                            itemBuilder: (context, index) {
+                              String category = oneProductPerCategory.keys
+                                  .elementAt(index);
+                              var product = oneProductPerCategory[category];
+
+                              return CategoryTile(
+                                image: product["image"], // ✔ REAL IMAGE
+                                category: category, // ✔ CATEGORY NAME
+                              );
+                            },
                           ),
-                      itemBuilder: (context, index) {
-                        return CategoryTile(
-                          image: categories[index],
-                          name: categoryNames[index],
-                        );
-                      },
-                    ),
 
                     const SizedBox(height: 25),
 
                     // Popular Products
                     Text("Popular", style: AppStyles.heading),
                     const SizedBox(height: 15),
-                    SizedBox(
-                      height: 260,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: const [
-                          PopularItem(
-                            image: "images/headphones.webp",
-                            name: "Wireless Headphones",
-                            price: "59.99",
+                    loading
+                        ? const Center(child: CircularProgressIndicator())
+                        : SizedBox(
+                            height: 260,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: products.length > 10
+                                  ? 10
+                                  : products.length,
+                              itemBuilder: (context, index) {
+                                var product = products[index];
+                                return Row(
+                                  children: [
+                                    PopularItem(
+                                      image: product["image"] ?? "",
+                                      name: product["name"] ?? "",
+                                      price: product["price"].toString(),
+                                      category: product["category"] ?? "",
+                                    ),
+                                    const SizedBox(width: 15),
+                                  ],
+                                );
+                              },
+                            ),
                           ),
-                          SizedBox(width: 15),
-                          PopularItem(
-                            image: "images/laptop.webp",
-                            name: "Gaming Laptop",
-                            price: "999.99",
-                          ),
-                          SizedBox(width: 15),
-                          PopularItem(
-                            image: "images/tv.webp",
-                            name: "Smart TV",
-                            price: "499.99",
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -178,8 +216,8 @@ class _HomeState extends State<Home> {
 
 // Category Tile Widget
 class CategoryTile extends StatelessWidget {
-  final String image, name;
-  const CategoryTile({super.key, required this.image, required this.name});
+  final String image, category;
+  const CategoryTile({super.key, required this.image, required this.category});
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +225,9 @@ class CategoryTile extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => CategoryProduct(category: name)),
+          MaterialPageRoute(
+            builder: (_) => CategoryProduct(category: category),
+          ),
         );
       },
       child: Container(
@@ -207,7 +247,7 @@ class CategoryTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Expanded(
-              child: Image.asset(
+              child: Image.network(
                 image,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
@@ -220,7 +260,11 @@ class CategoryTile extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 5),
-            Text(name, style: AppStyles.subtitle, textAlign: TextAlign.center),
+            Text(
+              category,
+              style: AppStyles.subtitle,
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
@@ -230,31 +274,23 @@ class CategoryTile extends StatelessWidget {
 
 // Popular Item Widget
 class PopularItem extends StatelessWidget {
-  final String image, name, price;
+  final String image, name, price, category;
   const PopularItem({
     super.key,
     required this.image,
     required this.name,
     required this.price,
+    required this.category,
   });
-
-  // Map popular product name to category
-  String getCategoryName(String productName) {
-    if (productName.toLowerCase().contains("headphone")) return "Headphones";
-    if (productName.toLowerCase().contains("laptop")) return "Laptop";
-    if (productName.toLowerCase().contains("tv")) return "TV";
-    return "Others";
-  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        String categoryName = getCategoryName(name);
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => CategoryProduct(category: categoryName),
+            builder: (_) => CategoryProduct(category: category),
           ),
         );
       },
@@ -275,7 +311,7 @@ class PopularItem extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: Image.asset(
+              child: Image.network(
                 image,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {

@@ -1,4 +1,5 @@
 import 'package:e_commerence/Admin/admin_login.dart';
+import 'package:e_commerence/pages/signup.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -37,7 +38,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: "E-Commerce App",
       debugShowCheckedModeBanner: false,
-      home: const AdminLogin(),
+      home: const Signup(),
     );
   }
 }

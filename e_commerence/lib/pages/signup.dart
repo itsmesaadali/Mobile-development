@@ -5,7 +5,6 @@ import 'package:e_commerence/services/shared_pref.dart';
 import 'package:e_commerence/widget/support_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:random_string/random_string.dart';
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -28,44 +27,37 @@ class _SignupState extends State<Signup> {
       String password = passwordController.text;
 
       try {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+        UserCredential userData = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(email: email, password: password);
 
-        String id = randomAlphaNumeric(10);
+        String uid = userData.user!.uid;
 
-        await SharedPreferenceHelper().saveUserEmail(email);
-        await SharedPreferenceHelper().saveUserName(username);
-        await SharedPreferenceHelper().saveUserId(id);
-        await SharedPreferenceHelper().saveUserImage(
-          "https://via.placeholder.com/150",
-        );
-
+        // SAVE TO FIRESTORE
         Map<String, dynamic> userInfoMap = {
           "Name": username,
           "Email": email,
-          "id": id,
-          "Image": "https://via.placeholder.com/150",
+          "Image": "https://ui-avatars.com/api/?name=$username",
+          "uid": uid,
         };
-        await DatabaseMethods().addUserDetails(userInfoMap, id);
+
+        await DatabaseMethods().addUserDetails(userInfoMap, uid);
+
+        // SAVE TO SHARED PREF
+        await SharedPreferenceHelper().saveUserId(uid);
+        await SharedPreferenceHelper().saveUserName(username);
+        await SharedPreferenceHelper().saveUserEmail(email);
+        await SharedPreferenceHelper().saveUserImage(
+          "https://ui-avatars.com/api/?name=$username",
+        );
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const BottomNav()),
+          MaterialPageRoute(builder: (_) => const BottomNav()),
         );
-      } on FirebaseAuthException catch (e) {
-        String message = "";
-        if (e.code == 'weak-password') {
-          message = "The password provided is too weak.";
-        } else if (e.code == 'email-already-in-use') {
-          message = "The account already exists for that email.";
-        } else {
-          message = e.message ?? "Registration failed.";
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message, style: AppStyles.subtitle)),
-        );
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }

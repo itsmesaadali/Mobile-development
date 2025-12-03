@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class AllUser extends StatefulWidget {
@@ -8,30 +9,6 @@ class AllUser extends StatefulWidget {
 }
 
 class _AllUserState extends State<AllUser> {
-  // STATIC USER DATA
-  final List<Map<String, String>> users = [
-    {
-      "name": "Haroon Abbas",
-      "email": "haroon@example.com",
-      "image": "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      "name": "Ali Raza",
-      "email": "ali.raza@example.com",
-      "image": "https://i.pravatar.cc/150?img=12",
-    },
-    {
-      "name": "Hina Khan",
-      "email": "hina.khan@example.com",
-      "image": "https://i.pravatar.cc/150?img=22",
-    },
-    {
-      "name": "Usman Malik",
-      "email": "usman@example.com",
-      "image": "https://i.pravatar.cc/150?img=15",
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,102 +29,134 @@ class _AllUserState extends State<AllUser> {
 
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: ListView.builder(
-          itemCount: users.length,
-          itemBuilder: (context, index) {
-            var user = users[index];
 
-            return Container(
-              margin: const EdgeInsets.only(bottom: 15),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.15),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // Profile Image
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundImage: NetworkImage(user["image"]!),
-                  ),
+        child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection("users").snapshots(),
 
-                  const SizedBox(width: 15),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-                  // User Name & Email
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user["name"]!,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          user["email"]!,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return const Center(
+                child: Text(
+                  "No users found",
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+              );
+            }
+
+            var users = snapshot.data!.docs;
+
+            return ListView.builder(
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                var data = users[index].data() as Map<String, dynamic>;
+                String userId = users[index].id;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 15),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.15),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
 
-                  // Remove Button
-                  IconButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          title: const Text("Remove User"),
-                          content: Text(
-                            "Are you sure you want to remove ${user["name"]}?",
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("Cancel"),
+                  child: Row(
+                    children: [
+                      // profile image
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundImage: data["Image"] != null
+                            ? NetworkImage(data["Image"])
+                            : const NetworkImage("https://i.pravatar.cc/150"),
+                      ),
+
+                      const SizedBox(width: 15),
+
+                      // name + email
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              data["Name"] ?? "No Name",
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
                             ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      "${user["name"]} removed (static)",
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: const Text(
-                                "Remove",
-                                style: TextStyle(color: Colors.red),
+                            const SizedBox(height: 5),
+                            Text(
+                              data["Email"] ?? "No Email",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
                               ),
                             ),
                           ],
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                      ),
+
+                      // delete user
+                      IconButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              title: const Text("Remove User"),
+                              content: Text(
+                                "Are you sure you want to remove ${data["Name"]}?",
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    Navigator.pop(context);
+
+                                    await FirebaseFirestore.instance
+                                        .collection("users")
+                                        .doc(userId)
+                                        .delete();
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "${data["Name"]} removed",
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text(
+                                    "Remove",
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             );
           },
         ),
