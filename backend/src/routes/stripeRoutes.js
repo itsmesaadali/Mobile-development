@@ -36,3 +36,29 @@ router.post("/create-checkout-session", async (req, res) => {
 });
 
 module.exports = router;
+
+// const express = require("express");
+// const router = express.Router();
+// const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
+// // CREATE PAYMENT INTENT
+// router.post("/create-payment-intent", async (req, res) => {
+//   try {
+//     const { amount } = req.body;
+
+//     const paymentIntent = await stripe.paymentIntents.create({
+//       amount: Math.round(amount * 100), // convert to cents
+//       currency: "usd",
+//     });
+
+//     res.json({
+//       clientSecret: paymentIntent.client_secret,
+//     });
+
+//   } catch (err) {
+//     console.error("Stripe error:", err);
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
+// module.exports = router;
