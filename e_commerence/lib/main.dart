@@ -37,6 +37,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "E-Commerce App",
+      initialRoute: '/admin',
+      routes: {'/admin': (context) => const AdminLogin()},
       debugShowCheckedModeBanner: false,
       home: const Signup(),
     );
